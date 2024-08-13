@@ -3,11 +3,13 @@ const Accounts = require('./accounts-model')
 const {
     checkAccountPayload,
     checkAccountId, // saves `account` to req
-    checkAccountNameUnique
+    checkAccountNameUnique,
+    checkQueryParams
 } = require('./accounts-middleware')
 
-router.get('/', (req, res, next) => {
-    Accounts.getAll()
+router.get('/', checkQueryParams, (req, res, next) => {
+    const { limit, sortby, sortdir } = req.query
+    Accounts.getAll({ limit, sortby, sortdir })
         .then(accts => {
             res.status(200).json(accts)
         })
@@ -44,7 +46,7 @@ router.delete('/:id', checkAccountId, (req, res, next) => {
 
 router.use((err, req, res, next) => { // eslint-disable-line
     const { status, message } = err
-    res.status(status).json({ message })
+    res.status(status || 500).json({ message })
 })
 
 module.exports = router;

@@ -44,8 +44,34 @@ const checkAccountNameUnique = async (req, res, next) => {
     }
 }
 
+const checkQueryParams = (req, res, next) => {
+    let { limit, sortby, sortdir } = req.query
+    if (typeof limit !== 'undefined') {
+        if (
+            isNaN(parseFloat(limit)) ||
+            !Number.isInteger(Number(limit)) ||
+            Number(limit) < 1
+        ) {
+            next(response("limit, if included, must be a whole number greater than zero"))
+        }
+        req.query.limit = parseInt(limit)
+    }
+    if (typeof sortby !== 'undefined') {
+        if (!['id', 'name', 'budget'].includes(sortby)) {
+            next(response("sortby, if included, must be one of 'id', 'name', or 'budget'"))
+        }
+    }
+    if (typeof sortdir !== 'undefined') {
+        if (!['asc', 'desc'].includes(sortdir)) {
+            next(response("sortdir, if included, must be either 'asc' or 'desc'"))
+        }
+    }
+    next()
+}
+
 module.exports = {
     checkAccountPayload,
     checkAccountId,
-    checkAccountNameUnique
+    checkAccountNameUnique,
+    checkQueryParams
 }
